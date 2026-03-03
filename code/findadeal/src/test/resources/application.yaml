@@ -1,0 +1,18 @@
+app:
+  jwt:
+    secret: "AiFLCySGrvPbMKwc3K884SVRMwaXuL8GZkob5AgDlKX"
+    expiration-minutes: 60
+
+spring:
+  flyway:
+    enabled: false
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

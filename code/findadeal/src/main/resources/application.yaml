@@ -1,0 +1,17 @@
+spring:
+  config:
+    import: optional:file:./local.properties
+  application:
+    name: findadeal
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  profiles:
+    default: dev
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+
+# Optional: default profile when you run locally without env var
+# (If you prefer NOT to default, delete these 2 lines)

@@ -1,0 +1,8 @@
+spring.profiles.active=prod
+
+spring.datasource.url=jdbc:postgresql://localhost:5438/findadeal_v2
+spring.datasource.username=findadeal_user
+spring.datasource.password=findadeal_pass
+
+app.jwt.secret=secret
+app.jwt.expiration-minutes=60
