@@ -39,7 +39,7 @@ public class SecurityConfig {
         http
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) ->
-                                writeApiError(response, HttpStatus.UNAUTHORIZED, "Unauthorized", request.getRequestURI())
+                                writeApiError(response, HttpStatus.UNAUTHORIZED, "Unauthorised", request.getRequestURI())
                         )
                         .accessDeniedHandler((request, response, accessDeniedException) ->
                                 writeApiError(response, HttpStatus.FORBIDDEN, "Forbidden", request.getRequestURI())
@@ -55,7 +55,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
-                                "/v3/api-docs.yaml").permitAll()
+                                "/v3/api-docs.yaml",
+                                "/listings").permitAll()
                         .anyRequest().authenticated()
                 );
 
@@ -93,7 +94,6 @@ public class SecurityConfig {
     private void writeApiError(HttpServletResponse response, HttpStatus status, String message, String path)
             throws java.io.IOException {
 
-        // Helps avoid "already committed" issues if something wrote before this handler runs
         response.resetBuffer();
 
         response.setStatus(status.value());

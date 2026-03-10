@@ -3,6 +3,7 @@ package com.findadeal.service;
 import com.findadeal.dto.DealMatchesResponse;
 import com.findadeal.exception.BadRequestException;
 import com.findadeal.model.Listing;
+import com.findadeal.repository.ListingRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -15,10 +16,10 @@ public class DealMatchingService {
 
     private static final Logger log = LoggerFactory.getLogger(DealMatchingService.class);
 
-    private final ListingDataService listingDataService;
+    private final ListingRepository listingRepository;
 
-    public DealMatchingService(ListingDataService listingDataService) {
-        this.listingDataService = listingDataService;
+    public DealMatchingService(ListingRepository listingRepository) {
+        this.listingRepository = listingRepository;
     }
 
     private String normaliseKeyword(String keyword) {
@@ -55,7 +56,7 @@ public class DealMatchingService {
             throw new BadRequestException("percentageThreshold must be between 1 and 90");
         }
 
-        List<Listing> listings = listingDataService.getAllListings();
+        List<Listing> listings = listingRepository.findAll();
 
         List<Listing> filtered = listings.stream()
                 .filter(l -> l.getTitle() != null && l.getTitle().toLowerCase().contains(key))
@@ -73,7 +74,8 @@ public class DealMatchingService {
         }
 
         double avg = filtered.stream()
-                .mapToDouble(Listing::getPrice)
+                .map(Listing::getPrice)
+                .mapToDouble(java.math.BigDecimal::doubleValue)
                 .average()
                 .orElse(0);
 
@@ -82,8 +84,8 @@ public class DealMatchingService {
                 : avg * (1 - (percentageThreshold / 100.0));
 
         List<Listing> matches = filtered.stream()
-                .filter(l -> l.getPrice() <= cutoff)
-                .sorted(Comparator.comparingDouble(Listing::getPrice))
+                .filter(l -> l.getPrice().doubleValue() <= cutoff)
+                .sorted(Comparator.comparing(Listing::getPrice))
                 .toList();
 
         return new DealMatchesResponse(

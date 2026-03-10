@@ -3,14 +3,15 @@ package com.findadeal;
 import com.findadeal.dto.DealMatchesResponse;
 import com.findadeal.exception.BadRequestException;
 import com.findadeal.model.Listing;
+import com.findadeal.repository.ListingRepository;
 import com.findadeal.service.DealMatchingService;
-import com.findadeal.service.ListingDataService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,18 +22,18 @@ import static org.mockito.Mockito.when;
 class AlgorithmTests {
 
     @Mock
-    private ListingDataService listingDataService;
+    private ListingRepository listingRepository;
 
     @InjectMocks
     private DealMatchingService dealMatchingService;
 
     @Test
     void sortedMatchesBelowCutoff() {
-        when(listingDataService.getAllListings()).thenReturn(List.of(
-                new Listing("RTX 4070", 1000.0, "https://example.com/a"),
-                new Listing("RTX 4070", 900.0, "https://example.com/b"),
-                new Listing("RTX 4070 C", 700.0, "https://example.com/c"),
-                new Listing("Random Item", 50.0, "https://example.com/d")
+        when(listingRepository.findAll()).thenReturn(List.of(
+                new Listing("RTX 4070", new BigDecimal("1000.00"), "https://example.com/a"),
+                new Listing("RTX 4070", new BigDecimal("900.00"), "https://example.com/b"),
+                new Listing("RTX 4070 C", new BigDecimal("700.00"), "https://example.com/c"),
+                new Listing("Random Item", new BigDecimal("50.00"), "https://example.com/d")
         ));
 
         DealMatchesResponse response = dealMatchingService.findMatches(1L, 2L, "  RTX 4070  ", 10);
@@ -47,13 +48,14 @@ class AlgorithmTests {
 
     @Test
     void emptyNoKeywordMatches() {
-        when(listingDataService.getAllListings()).thenReturn(List.of(
-                new Listing("Ryzen 7 7800X3D", 699.0, "https://example.com/a")
+        when(listingRepository.findAll()).thenReturn(List.of(
+                new Listing("Ryzen 7 7800X3D", new BigDecimal("699.00"), "https://example.com/a")
         ));
 
         DealMatchesResponse response = dealMatchingService.findMatches(1L, 2L, "rtx", 20);
 
         assertEquals("rtx", response.keyword());
+        assertEquals(20, response.percentageThreshold());
         assertEquals(0, response.matchCount());
         assertEquals(0.0, response.averagePrice());
         assertEquals(0.0, response.cutoffPrice());
