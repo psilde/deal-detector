@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -26,6 +26,7 @@ public class DealMatchingService {
         if (keyword == null) return null;
         return keyword.trim().toLowerCase();
     }
+
     public DealMatchesResponse findMatches(
             Long userId,
             Long watchlistId,
@@ -56,13 +57,9 @@ public class DealMatchingService {
             throw new BadRequestException("percentageThreshold must be between 1 and 90");
         }
 
-        List<Listing> listings = listingRepository.findAll();
+        Double avgResult = listingRepository.findAveragePriceByKeyword(key);
 
-        List<Listing> filtered = listings.stream()
-                .filter(l -> l.getTitle() != null && l.getTitle().toLowerCase().contains(key))
-                .toList();
-
-        if (filtered.isEmpty()) {
+        if (avgResult == null || avgResult <= 0) {
             return new DealMatchesResponse(
                     key,
                     percentageThreshold,
@@ -73,20 +70,14 @@ public class DealMatchingService {
             );
         }
 
-        double avg = filtered.stream()
-                .map(Listing::getPrice)
-                .mapToDouble(java.math.BigDecimal::doubleValue)
-                .average()
-                .orElse(0);
+        double avg = avgResult;
+        double cutoff = avg * (1 - (percentageThreshold / 100.0));
 
-        double cutoff = avg <= 0
-                ? 0
-                : avg * (1 - (percentageThreshold / 100.0));
-
-        List<Listing> matches = filtered.stream()
-                .filter(l -> l.getPrice().doubleValue() <= cutoff)
-                .sorted(Comparator.comparing(Listing::getPrice))
-                .toList();
+        List<Listing> matches =
+                listingRepository.findByTitleContainingIgnoreCaseAndPriceLessThanEqualOrderByPriceAsc(
+                        key,
+                        BigDecimal.valueOf(cutoff)
+                );
 
         return new DealMatchesResponse(
                 key,
