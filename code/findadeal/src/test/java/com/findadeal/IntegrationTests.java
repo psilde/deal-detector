@@ -21,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 class IntegrationTests {
+
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
     @Autowired UserRepository userRepository;
@@ -46,25 +47,29 @@ class IntegrationTests {
                         .header("Authorization", bearer(token))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                            {"keyword":"rtx","percentageThreshold":99}
-                        """))
+                                {"keyword":"rtx","percentageThreshold":80}
+                                """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").exists());
     }
 
     @Test
-    void getMatchesPayloadSucessful() throws Exception {
+    void getMatchesPayloadSuccessful() throws Exception {
         String token = registerAndGetToken("integration_" + System.currentTimeMillis());
 
         long id = createWatchlist(token, "rtx 4070 super", 10);
 
-        mockMvc.perform(get("/watchlists/{id}/matches", id)
+        mockMvc.perform(get("/watchlists/{id}/matches?page=0&size=20", id)
                         .header("Authorization", bearer(token)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.keyword").value("rtx 4070 super"))
                 .andExpect(jsonPath("$.percentageThreshold").value(10))
-                .andExpect(jsonPath("$.matchCount").exists());
+                .andExpect(jsonPath("$.totalMatchCount").exists())
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalPages").exists())
+                .andExpect(jsonPath("$.matches").isArray());
     }
 
     private String registerAndGetToken(String username) throws Exception {

@@ -25,11 +25,12 @@ public class ListingController {
     }
     @GetMapping
     public Page<ListingResponse> getListings(
+            @RequestParam(defaultValue = "") String keyword,
             @ParameterObject
             @PageableDefault(size = 20) Pageable pageable
     ){
 
-        return listingService.getListings(pageable);
+        return listingService.getListings(keyword, pageable);
     }
 
 }

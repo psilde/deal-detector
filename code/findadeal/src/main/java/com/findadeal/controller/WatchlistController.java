@@ -6,11 +6,10 @@ import com.findadeal.dto.WatchlistUpdateRequest;
 import com.findadeal.service.WatchlistService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @SecurityRequirement(name = "bearerAuth")
 @RestController
@@ -29,21 +28,9 @@ public class WatchlistController {
         return watchlistService.create(req);
     }
 
-    /**
-     * example: /watchlists?page=0&size=10&sort=createdAt&dir=desc
-     */
     @GetMapping
-    public Page<WatchlistResponse> getMine(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sort,
-            @RequestParam(defaultValue = "desc") String dir
-    ) {
-        Sort.Direction direction =
-                "asc".equalsIgnoreCase(dir) ? Sort.Direction.ASC : Sort.Direction.DESC;
-
-        PageRequest pageable = PageRequest.of(page, size, Sort.by(direction, sort));
-        return watchlistService.getMine(pageable);
+    public List<WatchlistResponse> getMine() {
+        return watchlistService.getMine();
     }
 
     @PutMapping("/{id}")

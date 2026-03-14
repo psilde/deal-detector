@@ -6,6 +6,8 @@ import com.findadeal.model.Listing;
 import com.findadeal.repository.ListingRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -31,23 +33,27 @@ public class DealMatchingService {
             Long userId,
             Long watchlistId,
             String keyword,
-            int percentageThreshold
+            int percentageThreshold,
+            Pageable pageable
     ) {
-        DealMatchesResponse response = findMatchesInternal(keyword, percentageThreshold);
+        DealMatchesResponse response = findMatchesInternal(keyword, percentageThreshold, pageable);
 
         log.info(
-                "deals.match userId={} watchlistId={} keyword={} threshold={} matchCount={}",
+                "deals.match userId={} watchlistId={} keyword={} threshold={} page={} size={} returned={} totalMatchCount={}",
                 userId,
                 watchlistId,
                 response.keyword(),
                 response.percentageThreshold(),
-                response.matchCount()
+                response.page(),
+                response.size(),
+                response.matches().size(),
+                response.totalMatchCount()
         );
 
         return response;
     }
 
-    private DealMatchesResponse findMatchesInternal(String keyword, int percentageThreshold) {
+    private DealMatchesResponse findMatchesInternal(String keyword, int percentageThreshold, Pageable pageable) {
         String key = normaliseKeyword(keyword);
 
         if (key == null || key.isBlank()) {
@@ -66,6 +72,9 @@ public class DealMatchingService {
                     0,
                     0,
                     0,
+                    pageable.getPageNumber(),
+                    pageable.getPageSize(),
+                    0,
                     List.of()
             );
         }
@@ -73,10 +82,11 @@ public class DealMatchingService {
         double avg = avgResult;
         double cutoff = avg * (1 - (percentageThreshold / 100.0));
 
-        List<Listing> matches =
-                listingRepository.findByTitleContainingIgnoreCaseAndPriceLessThanEqualOrderByPriceAsc(
+        Page<Listing> matchPage =
+                listingRepository.findByTitleContainingIgnoreCaseAndPriceLessThanEqual(
                         key,
-                        BigDecimal.valueOf(cutoff)
+                        BigDecimal.valueOf(cutoff),
+                        pageable
                 );
 
         return new DealMatchesResponse(
@@ -84,8 +94,11 @@ public class DealMatchingService {
                 percentageThreshold,
                 avg,
                 cutoff,
-                matches.size(),
-                matches
+                matchPage.getTotalElements(),
+                matchPage.getNumber(),
+                matchPage.getSize(),
+                matchPage.getTotalPages(),
+                matchPage.getContent()
         );
     }
 }

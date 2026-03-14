@@ -10,12 +10,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,51 +33,70 @@ class AlgorithmTests {
 
     @Test
     void sortedMatchesBelowCutoff() {
-        when(listingRepository.findAll()).thenReturn(List.of(
-                new Listing("RTX 4070", new BigDecimal("1000.00"), "https://example.com/a"),
-                new Listing("RTX 4070", new BigDecimal("900.00"), "https://example.com/b"),
-                new Listing("RTX 4070 C", new BigDecimal("700.00"), "https://example.com/c"),
-                new Listing("Random Item", new BigDecimal("50.00"), "https://example.com/d")
-        ));
+        Pageable pageable = PageRequest.of(0, 20);
 
-        DealMatchesResponse response = dealMatchingService.findMatches(1L, 2L, "  RTX 4070  ", 10);
+        when(listingRepository.findAveragePriceByKeyword("rtx 4070"))
+                .thenReturn(866.6666666666666);
+
+        when(listingRepository.findByTitleContainingIgnoreCaseAndPriceLessThanEqual(
+                eq("rtx 4070"),
+                eq(BigDecimal.valueOf(780.0)),
+                eq(pageable)
+        )).thenReturn(new PageImpl<>(List.of(
+                new Listing("RTX 4070 C", new BigDecimal("700.00"), "https://example.com/c")
+        ), pageable, 1));
+
+        DealMatchesResponse response =
+                dealMatchingService.findMatches(1L, 2L, "  RTX 4070  ", 10, pageable);
 
         assertEquals("rtx 4070", response.keyword());
         assertEquals(10, response.percentageThreshold());
         assertEquals(866.6666666666666, response.averagePrice());
         assertEquals(780.0, response.cutoffPrice());
-        assertEquals(1, response.matchCount());
-        assertEquals("RTX 4070 C", response.matches().getFirst().getTitle());
+        assertEquals(1, response.totalMatchCount());
+        assertEquals(0, response.page());
+        assertEquals(20, response.size());
+        assertEquals(1, response.totalPages());
+        assertEquals("RTX 4070 C", response.matches().get(0).getTitle());
     }
 
     @Test
     void emptyNoKeywordMatches() {
-        when(listingRepository.findAll()).thenReturn(List.of(
-                new Listing("Ryzen 7 7800X3D", new BigDecimal("699.00"), "https://example.com/a")
-        ));
+        Pageable pageable = PageRequest.of(0, 20);
 
-        DealMatchesResponse response = dealMatchingService.findMatches(1L, 2L, "rtx", 20);
+        when(listingRepository.findAveragePriceByKeyword("rtx"))
+                .thenReturn(null);
+
+        DealMatchesResponse response =
+                dealMatchingService.findMatches(1L, 2L, "rtx", 20, pageable);
 
         assertEquals("rtx", response.keyword());
         assertEquals(20, response.percentageThreshold());
-        assertEquals(0, response.matchCount());
+        assertEquals(0L, response.totalMatchCount());
         assertEquals(0.0, response.averagePrice());
         assertEquals(0.0, response.cutoffPrice());
+        assertEquals(0, response.page());
+        assertEquals(20, response.size());
+        assertEquals(0, response.totalPages());
         assertEquals(List.of(), response.matches());
     }
 
     @Test
     void keywordBlank() {
+        Pageable pageable = PageRequest.of(0, 20);
+
         assertThrows(BadRequestException.class,
-                () -> dealMatchingService.findMatches(1L, 2L, "   ", 10));
+                () -> dealMatchingService.findMatches(1L, 2L, "   ", 10, pageable));
     }
 
     @Test
     void thresholdOutsideRange() {
-        assertThrows(BadRequestException.class,
-                () -> dealMatchingService.findMatches(1L, 2L, "gpu", 0));
+        Pageable pageable = PageRequest.of(0, 20);
 
         assertThrows(BadRequestException.class,
-                () -> dealMatchingService.findMatches(1L, 2L, "gpu", 101));
+                () -> dealMatchingService.findMatches(1L, 2L, "gpu", 0, pageable));
+
+        assertThrows(BadRequestException.class,
+                () -> dealMatchingService.findMatches(1L, 2L, "gpu", 101, pageable));
     }
 }

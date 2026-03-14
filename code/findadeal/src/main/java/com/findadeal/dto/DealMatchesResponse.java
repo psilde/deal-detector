@@ -9,6 +9,9 @@ public record DealMatchesResponse(
         int percentageThreshold,
         double averagePrice,
         double cutoffPrice,
-        int matchCount,
+        long totalMatchCount,
+        int page,
+        int size,
+        int totalPages,
         List<Listing> matches
 ) { }

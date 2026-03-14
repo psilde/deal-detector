@@ -5,6 +5,8 @@ import com.findadeal.model.Watchlist;
 import com.findadeal.service.DealMatchingService;
 import com.findadeal.service.WatchlistService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 @SecurityRequirement(name = "bearerAuth")
@@ -24,14 +26,21 @@ public class DealController {
     }
 
     @GetMapping("/{id}/matches")
-    public DealMatchesResponse getMatches(@PathVariable Long id) {
+    public DealMatchesResponse getMatches(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size)
+    {
         Watchlist watchlist = watchlistService.getOwnedEntity(id);
+
+        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "price"));
 
         return dealMatchingService.findMatches(
                 watchlist.getUser().getId(),
                 watchlist.getId(),
                 watchlist.getKeyword(),
-                watchlist.getPercentageThreshold()
+                watchlist.getPercentageThreshold(),
+                pageable
         );
     }
 }

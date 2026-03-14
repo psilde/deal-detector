@@ -10,12 +10,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class ListingService {
     private final ListingRepository listingRepository;
+
     public ListingService(ListingRepository listingRepository){
         this.listingRepository = listingRepository;
     }
-    public Page<ListingResponse> getListings(Pageable pageable) {
-        Page<Listing> page = listingRepository.findAll(pageable);
-        System.out.println("Found listings: " + page.getTotalElements());
+
+    public Page<ListingResponse> getListings(String keyword, Pageable pageable) {
+        Page<Listing> page;
+        if (keyword == null || keyword.isBlank()){
+            page = listingRepository.findAll(pageable);
+        } else {
+            page = listingRepository.findByTitleContainingIgnoreCase(keyword, pageable);
+        }
+
 
         return page.map(this::toResponse);
     }
