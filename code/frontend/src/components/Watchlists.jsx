@@ -301,6 +301,9 @@ function Watchlists({ token }) {
                   url={listing.url}
                   createdAt={listing.createdAt}
                   imageUrl={listing.imageUrl}
+                  marketAverage={listing.marketAverage}
+                  discountPercentage={listing.discountPercentage}
+                  savings={listing.savings}
                 />
               ))}
             </div>

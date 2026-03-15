@@ -293,14 +293,28 @@ function App() {
               />
 
               <p key={debouncedKeyword} className="search-status">
-                Searching for: {debouncedKeyword || 'All listings'}
+                {debouncedKeyword ? `Searching: "${debouncedKeyword}"` : 'All listings'}
               </p>
 
-              {loading && listings.length === 0 && <p>Loading listings...</p>}
               {error && <p className="watchlist-error">Error: {error}</p>}
             </div>
 
-            {!loading && !error && (
+            {loading ? (
+              <div className="listings-grid">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="listing-card">
+                    <div className="skeleton skeleton-image" />
+                    <div className="listing-body">
+                      <div className="skeleton skeleton-line skeleton-title" />
+                      <div className="skeleton skeleton-line skeleton-short" />
+                      <div className="skeleton skeleton-line skeleton-price" />
+                      <div className="skeleton skeleton-line skeleton-short" />
+                      <div className="skeleton skeleton-btn" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : !error && (
               <div className="listings-grid page-enter">
                 {listings.map((listing) => (
                   <Listing
