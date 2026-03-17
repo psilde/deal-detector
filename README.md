@@ -15,13 +15,7 @@ filtering logic to surface listings that may be under market value via watchlist
 
 responsible for analysing listings to detect deals
 
-raw listings
-↓
-deal-scraper (collects and normalises data)
-↓
-deal-detector (finds deals)
-↓
-found deals
+raw listings -> deal-scraper (collects and normalises data) -> deal-detector (finds deals) -> found deals
 
 ---
 
