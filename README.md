@@ -9,6 +9,9 @@ filtering.
 The system processes listing data collected by **deal-scraper**, applying structured queries and
 filtering logic to surface listings that may be under market value via watchlists
 
+See how it works:
+<img width="1919" height="827" alt="image" src="https://github.com/user-attachments/assets/662b5b10-d59b-4fc3-aed0-fc75bae62290" />
+
 ---
 
 ## System Architecture
