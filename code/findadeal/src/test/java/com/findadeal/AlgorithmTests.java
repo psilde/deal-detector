@@ -1,10 +1,10 @@
 package com.findadeal;
 
-import com.findadeal.dto.DealMatchesResponse;
-import com.findadeal.exception.BadRequestException;
-import com.findadeal.model.Listing;
-import com.findadeal.repository.ListingRepository;
-import com.findadeal.service.DealMatchingService;
+import com.findadeal.deal.dto.DealMatchesResponse;
+import com.findadeal.common.exception.BadRequestException;
+import com.findadeal.listing.Listing;
+import com.findadeal.listing.ListingRepository;
+import com.findadeal.deal.DealMatchingService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,13 +38,16 @@ class AlgorithmTests {
         when(listingRepository.findAveragePriceByKeyword("rtx 4070"))
                 .thenReturn(866.6666666666666);
 
+        Listing listing = new Listing();
+        listing.setTitle("RTX 4070 C");
+        listing.setPrice(new BigDecimal("700.00"));
+        listing.setUrl("https://example.com/c");
+
         when(listingRepository.findByTitleContainingIgnoreCaseAndPriceLessThanEqual(
                 eq("rtx 4070"),
                 eq(BigDecimal.valueOf(780.0)),
                 eq(pageable)
-        )).thenReturn(new PageImpl<>(List.of(
-                new Listing("RTX 4070 C", new BigDecimal("700.00"), "https://example.com/c")
-        ), pageable, 1));
+        )).thenReturn(new PageImpl<>(List.of(listing), pageable, 1));
 
         DealMatchesResponse response =
                 dealMatchingService.findMatches(1L, 2L, "  RTX 4070  ", 10, pageable);
@@ -57,7 +60,7 @@ class AlgorithmTests {
         assertEquals(0, response.page());
         assertEquals(20, response.size());
         assertEquals(1, response.totalPages());
-        assertEquals("RTX 4070 C", response.matches().get(0).getTitle());
+        assertEquals("RTX 4070 C", response.matches().get(0).title());
     }
 
     @Test
@@ -97,6 +100,6 @@ class AlgorithmTests {
                 () -> dealMatchingService.findMatches(1L, 2L, "gpu", 0, pageable));
 
         assertThrows(BadRequestException.class,
-                () -> dealMatchingService.findMatches(1L, 2L, "gpu", 101, pageable));
+                () -> dealMatchingService.findMatches(1L, 2L, "gpu", 91, pageable));
     }
 }

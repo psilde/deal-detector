@@ -1,229 +1,221 @@
-import { useEffect } from 'react'
-import { Activity, Search, BellRing, ArrowRight } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
-function Home({ token, onBrowseClick, onWatchlistsClick, onSelectLogin, onSelectRegister }) {
+const SPLASH_KEY = 'dd_splash_v1'
+const TARGET = 'deal detect'
+
+const DEMO_STEPS = [
+  { key: 'normaliseKeyword()',          label: 'Normalising keyword…',   value: '"rtx 4080 super"',       mono: true  },
+  { key: 'findAveragePriceByKeyword()', label: 'Finding average price…', value: '$850',                   mono: false },
+  { key: 'cutoff = avg × (1 − t/100)', label: 'Computing cutoff…',      value: '$850 × 0.85 = $722.50',  mono: true  },
+  { key: 'price ≤ cutoff',             label: 'Evaluating price…',      value: '$650 ≤ $722.50',         mono: true  },
+]
+
+function AlgoDemo() {
+  const [step, setStep] = useState(0)
+  const [running, setRunning] = useState(false)
+  const isDone = step >= DEMO_STEPS.length
+
+  function play() {
+    setStep(0)
+    setRunning(true)
+  }
+
+  function reset() {
+    setStep(0)
+    setRunning(false)
+  }
+
   useEffect(() => {
-    const elements = document.querySelectorAll('.reveal')
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('revealed')
-          }
-        })
-      },
-      {
-        threshold: 0.12,
-        rootMargin: '0px 0px -80px 0px'
-      }
-    )
-
-    elements.forEach((element) => observer.observe(element))
-
-    return () => observer.disconnect()
-  }, [])
+    if (!running || step >= DEMO_STEPS.length) return
+    const delay = step === 0 ? 480 : 760
+    const t = setTimeout(() => setStep(s => s + 1), delay)
+    return () => clearTimeout(t)
+  }, [running, step])
 
   return (
-    <div className="home-page">
-      <section className="hero-section page-enter">
-        <div className="hero-copy">
-          <div className="hero-badge">Smarter deal tracking</div>
+    <div className="algo-demo">
+      <div className="algo-demo-header">
+        <p className="algo-eyebrow">// algorithm.execute()</p>
+        <h2 className="algo-demo-title">Live execution trace</h2>
+      </div>
 
-          <h1 className="hero-title">
-            Find the best online deals
-            <span className="hero-accent">before everyone else</span>
-          </h1>
+      <div className="algo-demo-input">
+        <span className="algo-demo-input-label">listing</span>
+        <span className="algo-demo-input-val">RTX 4080 SUPER · $650 · New York</span>
+      </div>
 
-          <p className="hero-subtitle">
-            Search listings, build watchlists, and spot underpriced items through a cleaner,
-            focused dashboard built for fast scanning.
-          </p>
-
-          <div className="hero-actions">
-            {token ? (
-              <>
-                <button className="button-primary hero-button" onClick={onBrowseClick}>
-                  Browse listings
-                </button>
-
-                <button className="button-secondary hero-button" onClick={onWatchlistsClick}>
-                  View watchlists
-                </button>
-              </>
-            ) : (
-              <>
-                <button className="button-primary hero-button" onClick={onSelectRegister}>
-                  Get started
-                </button>
-
-                <button className="button-secondary hero-button" onClick={onSelectLogin}>
-                  Log in
-                </button>
-              </>
-            )}
+      <div className="algo-demo-steps">
+        {step === 0 && !running && (
+          <div className="algo-demo-placeholder">// press run to execute</div>
+        )}
+        {DEMO_STEPS.map((s, i) => i < step && (
+          <div key={s.key} className="algo-demo-step">
+            <span className="algo-demo-step-key">{s.key}</span>
+            <span className={`algo-demo-step-val${s.mono ? ' mono' : ''}`}>{s.value}</span>
           </div>
-
-          <div className="hero-meta">
-            <span>Track products you care about</span>
-            <span>Search instantly</span>
-            <span>Spot better-value listings</span>
+        ))}
+        {isDone && running && (
+          <div className="algo-demo-verdict">
+            → MATCH · $650 ≤ $722.50 · 24% below market · saves $200
           </div>
-        </div>
+        )}
+      </div>
 
-        <div className="hero-side">
-          <div className="hero-preview panel">
-            <div className="preview-header">
-              <div>
-                <p className="preview-label">Live preview</p>
-                <h3>Deal activity</h3>
-              </div>
-              <span className="preview-pill">Updated</span>
-            </div>
-
-            <div className="preview-list">
-              <div className="preview-item">
-                <div className="preview-item-left">
-                  <div className="preview-icon-chip">
-                    <Activity size={14} strokeWidth={2.2} />
-                  </div>
-
-                  <div>
-                    <strong>RTX 4080 SUPER 16GB</strong>
-                    <p>Watchlist match • 14% below average</p>
-                  </div>
-                </div>
-                <span className="preview-price">$2,727</span>
-              </div>
-
-              <div className="preview-item">
-                <div className="preview-item-left">
-                  <div className="preview-icon-chip">
-                    <Search size={14} strokeWidth={2.2} />
-                  </div>
-
-                  <div>
-                    <strong>iPhone 15 Pro Max 256GB</strong>
-                    <p>Keyword search • recently added</p>
-                  </div>
-                </div>
-                <span className="preview-price">$1,887</span>
-              </div>
-
-              <div className="preview-item">
-                <div className="preview-item-left">
-                  <div className="preview-icon-chip">
-                    <BellRing size={14} strokeWidth={2.2} />
-                  </div>
-
-                  <div>
-                    <strong>Nissan GT-R 2022</strong>
-                    <p>Tracked listing • price movement detected</p>
-                  </div>
-                </div>
-                <span className="preview-price">$70,810</span>
-              </div>
-            </div>
+      <div className="algo-demo-footer">
+        {!running ? (
+          <button className="algo-demo-play" onClick={play}>
+            ▶&ensp;Run algorithm
+          </button>
+        ) : isDone ? (
+          <button className="algo-demo-play algo-demo-play--reset" onClick={reset}>
+            ↺&ensp;Reset
+          </button>
+        ) : (
+          <div className="algo-demo-running">
+            <span className="algo-demo-dot" />
+            {DEMO_STEPS[step]?.label ?? '…'}
           </div>
-        </div>
-      </section>
+        )}
 
-      <section className="home-section reveal">
-        <div className="section-heading">
-          <h2>How it works</h2>
-          <p>A simple workflow designed around finding value quickly.</p>
-        </div>
+        {!running && (
+          <span className="algo-demo-footer-note">RTX 4080 SUPER · 15% threshold</span>
+        )}
+      </div>
+    </div>
+  )
+}
 
-        <div className="feature-grid">
-          <article className="feature-card panel reveal-step step-1">
-            <div className="feature-icon">01</div>
-            <h3>Browse listings</h3>
-            <p>
-              Search through items quickly with a cleaner interface designed for scanning and filtering.
-            </p>
-          </article>
+function Home({ onAlgorithmClick, onWatchlistsClick }) {
+  const hasSeenSplash = sessionStorage.getItem(SPLASH_KEY) === 'done'
+  const [splashDone, setSplashDone] = useState(hasSeenSplash)
+  const [text, setText] = useState('')
+  const [phase, setPhase] = useState('typing') // 'typing' | 'done' | 'ready' | 'exit'
 
-          <article className="feature-card panel reveal-step step-2">
-            <div className="feature-icon">02</div>
-            <h3>Create watchlists</h3>
-            <p>
-              Save keywords and discount thresholds so you can focus on the items that matter most.
-            </p>
-          </article>
+  useEffect(() => {
+    if (hasSeenSplash) return
 
-          <article className="feature-card panel reveal-step step-3">
-            <div className="feature-icon">03</div>
-            <h3>Track value</h3>
-            <p>
-              Pull matching deals into one place instead of manually checking listing sites all day.
-            </p>
-          </article>
-        </div>
-      </section>
+    let cancelled = false
 
-      <section className="home-band reveal">
-        <div className="home-band-copy">
-          <p className="home-band-label">Why people use it</p>
-          <h2>Less noise. Faster deal hunting.</h2>
-          <p>
-            Deal Detection helps you move from endless browsing to focused tracking, filtering, and action.
-          </p>
-        </div>
+    const schedule = (fn, delay) => setTimeout(() => { if (!cancelled) fn() }, delay)
 
-        <div className="home-stats">
-          <div className="home-stat panel">
-            <strong>Search faster</strong>
-            <span>Focused keyword browsing</span>
+    let i = 0
+    const typeNext = () => {
+      if (cancelled) return
+      if (i < TARGET.length) {
+        i++
+        setText(TARGET.slice(0, i))
+        schedule(typeNext, 75)
+      } else {
+        setPhase('done')
+        schedule(() => {
+          setPhase('ready')
+          schedule(() => {
+            setPhase('exit')
+            schedule(() => {
+              sessionStorage.setItem(SPLASH_KEY, 'done')
+              setSplashDone(true)
+            }, 450)
+          }, 700)
+        }, 600)
+      }
+    }
+
+    schedule(typeNext, 300)
+    return () => { cancelled = true }
+  }, [])
+
+  if (!splashDone) {
+    return (
+      <div className={`splash-screen${phase === 'exit' ? ' splash-exit' : ''}`}>
+        <div className="splash-inner">
+          <div className="splash-line">
+            <span className="splash-prompt">$</span>
+            <span className="splash-text">{text}</span>
+            <span className={`splash-cursor${phase !== 'typing' ? ' splash-cursor-blink' : ''}`}>_</span>
           </div>
-
-          <div className="home-stat panel">
-            <strong>Track smarter</strong>
-            <span>Watchlists built around price drops</span>
-          </div>
-
-          <div className="home-stat panel">
-            <strong>Stay organized</strong>
-            <span>One place for matching deals</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="cta-strip panel reveal">
-        <div>
-          <h2>Ready to start tracking deals?</h2>
-          <p>
-            {token
-              ? 'Jump into browsing or open your watchlists.'
-              : 'Create an account and start tracking listings in a cleaner workflow.'}
-          </p>
-        </div>
-
-        <div className="cta-strip-actions">
-          {token ? (
-            <>
-              <button className="button-primary" onClick={onBrowseClick}>
-                <span>Go to browse</span>
-                <ArrowRight size={15} strokeWidth={2.3} />
-              </button>
-
-              <button className="button-secondary" onClick={onWatchlistsClick}>
-                Open watchlists
-              </button>
-            </>
-          ) : (
-            <>
-              <button className="button-primary" onClick={onSelectRegister}>
-                <span>Create account</span>
-                <ArrowRight size={15} strokeWidth={2.3} />
-              </button>
-
-              <button className="button-secondary" onClick={onSelectLogin}>
-                Log in
-              </button>
-            </>
+          {(phase === 'ready' || phase === 'exit') && (
+            <div className="splash-ready">// initialized</div>
           )}
         </div>
-      </section>
+      </div>
+    )
+  }
+
+  return (
+    <div className="overview-page page-enter">
+      <div className="overview-left">
+        <div className="overview-header">
+          <h1 className="overview-title">Deal Detect</h1>
+          <p className="overview-desc">
+            A market-aware deal matching engine built on Spring Boot. Create watchlists,
+            set discount thresholds, and let the algorithm surface underpriced listings automatically.
+          </p>
+          <div className="overview-actions">
+            <button className="button-primary" onClick={onAlgorithmClick}>Algorithm explorer</button>
+            <button className="button-secondary" onClick={onWatchlistsClick}>View watchlists</button>
+          </div>
+        </div>
+
+        <div className="overview-grid">
+          <div className="overview-card">
+            <div className="overview-card-label">01 — Watchlists</div>
+            <h3 className="overview-card-title">Keyword tracking</h3>
+            <p className="overview-card-desc">
+              Create watchlists for keywords you care about. Each has a configurable discount
+              threshold the engine filters against.
+            </p>
+          </div>
+
+          <div className="overview-card">
+            <div className="overview-card-label">02 — Matching</div>
+            <h3 className="overview-card-title">Market-aware scoring</h3>
+            <p className="overview-card-desc">
+              Listings are scored against the live average price for their keyword — not a fixed
+              value. The cutoff shifts with the market.
+            </p>
+          </div>
+
+          <div className="overview-card">
+            <div className="overview-card-label">03 — Algorithm</div>
+            <h3 className="overview-card-title">Transparent engine</h3>
+            <p className="overview-card-desc">
+              The matching logic mirrors{' '}
+              <code style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.8em' }}>
+                DealMatchingService.java
+              </code>{' '}
+              directly. Explore it interactively in the Algorithm tab.
+            </p>
+          </div>
+        </div>
+
+        <div className="overview-system">
+          <div className="overview-system-title">Stack</div>
+          <div className="overview-system-rows">
+            <div className="overview-system-row">
+              <span className="overview-system-key">Backend</span>
+              <span className="overview-system-val">Spring Boot · Java</span>
+            </div>
+            <div className="overview-system-row">
+              <span className="overview-system-key">Authentication</span>
+              <span className="overview-system-val">JWT Bearer tokens</span>
+            </div>
+            <div className="overview-system-row">
+              <span className="overview-system-key">Matching engine</span>
+              <span className="overview-system-val">DealMatchingService.java</span>
+            </div>
+            <div className="overview-system-row">
+              <span className="overview-system-key">Listings source</span>
+              <span className="overview-system-val">Facebook Marketplace scraper · paginated</span>
+            </div>
+            <div className="overview-system-row">
+              <span className="overview-system-key">Frontend</span>
+              <span className="overview-system-val">React · Vite · vanilla CSS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <AlgoDemo />
     </div>
   )
 }

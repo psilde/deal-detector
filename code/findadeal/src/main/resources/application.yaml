@@ -3,15 +3,27 @@ spring:
     import: optional:file:./local.properties
   application:
     name: findadeal
-  mvc:
-    pathmatch:
-      matching-strategy: ant_path_matcher
-  profiles:
-    default: dev
+  datasource:
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
   jackson:
     serialization:
       write-dates-as-timestamps: false
 
+app:
+  jwt:
+    expiration-minutes: 60
+  scraper:
+    base-url: http://localhost:8081
+    page-size: 200
 
-# Optional: default profile when you run locally without env var
-# (If you prefer NOT to default, delete these 2 lines)
+logging:
+  level:
+    root: INFO
+    com.findadeal: DEBUG

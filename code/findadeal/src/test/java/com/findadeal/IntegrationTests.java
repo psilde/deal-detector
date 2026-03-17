@@ -1,8 +1,8 @@
 package com.findadeal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.findadeal.repository.UserRepository;
-import com.findadeal.repository.WatchlistRepository;
+import com.findadeal.user.UserRepository;
+import com.findadeal.watchlist.WatchlistRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +47,7 @@ class IntegrationTests {
                         .header("Authorization", bearer(token))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"keyword":"rtx","percentageThreshold":80}
+                                {"keyword":"rtx","percentageThreshold":95}
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
