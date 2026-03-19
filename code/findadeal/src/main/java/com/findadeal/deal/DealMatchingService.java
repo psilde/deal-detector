@@ -4,6 +4,7 @@ import com.findadeal.deal.dto.DealMatchesResponse;
 import com.findadeal.listing.dto.ListingResponse;
 import com.findadeal.common.exception.BadRequestException;
 import com.findadeal.listing.ListingRepository;
+import com.findadeal.listing.ListingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -20,9 +21,11 @@ public class DealMatchingService {
     private static final Logger log = LoggerFactory.getLogger(DealMatchingService.class);
 
     private final ListingRepository listingRepository;
+    private final ListingService listingService;
 
-    public DealMatchingService(ListingRepository listingRepository) {
+    public DealMatchingService(ListingRepository listingRepository, ListingService listingService) {
         this.listingRepository = listingRepository;
+        this.listingService = listingService;
     }
 
     @Transactional(readOnly = true)
@@ -42,7 +45,7 @@ public class DealMatchingService {
             throw new BadRequestException("percentageThreshold must be between 1 and 90");
         }
 
-        Double avgResult = listingRepository.findAveragePriceByKeyword(key);
+        Double avgResult = listingService.getAveragePrice(key);
 
         if (avgResult == null || avgResult <= 0) {
             log.info("deals.match userId={} watchlistId={} keyword={} threshold={} noData",

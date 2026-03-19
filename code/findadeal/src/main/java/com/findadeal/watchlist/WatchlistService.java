@@ -8,10 +8,10 @@ import com.findadeal.user.CurrentUserService;
 import com.findadeal.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 public class WatchlistService {
@@ -46,18 +46,16 @@ public class WatchlistService {
     }
 
     @Transactional(readOnly = true)
-    public List<WatchlistResponse> getMine() {
+    public Page<WatchlistResponse> getMine(Pageable pageable) {
         User user = currentUserService.getCurrentUser();
 
-        List<WatchlistResponse> watchlists = watchlistRepository.findAllByUserId(user.getId())
-                .stream()
-                .map(this::toResponse)
-                .toList();
+        Page<WatchlistResponse> watchlists = watchlistRepository
+                .findAllByUserId(user.getId(), pageable)
+                .map(this::toResponse);
 
-        log.info("watchlist.list userId={} returned={}",
-                user.getId(),
-                watchlists.size()
-        );
+        log.info("watchlist.list userId={} page={} size={} returned={}",
+                user.getId(), pageable.getPageNumber(), pageable.getPageSize(),
+                watchlists.getNumberOfElements());
 
         return watchlists;
     }

@@ -4,6 +4,7 @@ import com.findadeal.ingestion.client.dto.ScraperListingDto;
 import com.findadeal.ingestion.dto.IngestResult;
 import com.findadeal.listing.Listing;
 import com.findadeal.listing.ListingRepository;
+import com.findadeal.listing.ListingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -24,10 +25,13 @@ public class ListingUpsertService {
 
     private final ListingRepository listingRepository;
     private final ListingMapper mapper;
+    private final ListingService listingService;
 
-    public ListingUpsertService(ListingRepository listingRepository, ListingMapper mapper) {
+    public ListingUpsertService(ListingRepository listingRepository, ListingMapper mapper,
+                                ListingService listingService) {
         this.listingRepository = listingRepository;
         this.mapper = mapper;
+        this.listingService = listingService;
     }
 
     @Transactional
@@ -78,6 +82,10 @@ public class ListingUpsertService {
         }
 
         log.info("upsert.complete created={} updated={}", created, updated);
+
+        // remove cached average prices so deal matching reflects new listings immediately
+        listingService.evictAveragePriceCache();
+
         return new IngestResult(created, updated);
     }
 }

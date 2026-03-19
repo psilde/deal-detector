@@ -1,6 +1,8 @@
 package com.findadeal.listing;
 
 import com.findadeal.listing.dto.ListingResponse;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,4 +25,22 @@ public class ListingService {
         return listingRepository.findByTitleContainingIgnoreCase(keyword.trim(), pageable)
                 .map(ListingResponse::from);
     }
+
+    /**
+     * Returns the average price for listings matching the given keyword.
+     * Result is cached by keyword and evicted whenever listings are synced,
+     * eliminating the full-table AVG scan on repeated deal-match requests.
+     */
+    @Cacheable(value = "avgPriceByKeyword", key = "#keyword")
+    @Transactional(readOnly = true)
+    public Double getAveragePrice(String keyword) {
+        return listingRepository.findAveragePriceByKeyword(keyword);
+    }
+
+    /**
+     * Evicts all cached average prices. Called after every scraper sync
+     * so stale averages are never served after new listings arrive.
+     */
+    @CacheEvict(value = "avgPriceByKeyword", allEntries = true)
+    public void evictAveragePriceCache() {}
 }
