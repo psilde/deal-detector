@@ -1,10 +1,8 @@
 <div align="center">
+  <img src=".github/header.svg" alt="deal-detector" width="100%"/>
+</div>
 
-# deal-detector
-
-### Backend engine for detecting underpriced marketplace listings.
-
-<br/>
+<div align="center">
 
 ![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
