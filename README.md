@@ -14,15 +14,15 @@
 
 </div>
 
----
+<br/>
 
 Marketplace listings go stale fast. deal-detector sits downstream of a scraper pipeline, applying pricing baselines and keyword normalisation against a live PostgreSQL database to surface listings that are statistically underpriced. Users create watchlists for categories they care about; the engine does the rest.
 
 Part of a two-service system — see also [deal-scraper](https://github.com/psilde/deal-scraper).
 
----
+<br/>
 
-## System Architecture
+<img src=".github/section-architecture.svg" alt="System Architecture" width="100%"/>
 
 ```mermaid
 flowchart LR
@@ -32,9 +32,9 @@ flowchart LR
     D --> E[Clients / Watchlists]
 ```
 
----
+<br/>
 
-## Core Features
+<img src=".github/section-features.svg" alt="Core Features" width="100%"/>
 
 - **Pricing baseline engine** — compares each listing against category averages to flag statistical outliers
 - **Keyword normalisation** — strips noise from listing titles before analysis so comparisons are consistent
@@ -43,9 +43,9 @@ flowchart LR
 - **JWT authentication** — stateless auth via Spring Security; all endpoints protected by role
 - **Structured error handling** — centralised `@ControllerAdvice` returns consistent JSON error shapes across the API
 
----
+<br/>
 
-## Tech Stack
+<img src=".github/section-techstack.svg" alt="Tech Stack" width="100%"/>
 
 | Technology | Purpose |
 |---|---|
@@ -55,9 +55,9 @@ flowchart LR
 | Flyway | Version-controlled schema migrations |
 | Docker | Containerised local dev and deployment |
 
----
+<br/>
 
-## Getting Started
+<img src=".github/section-setup.svg" alt="Getting Started" width="100%"/>
 
 ```bash
 # 1. Clone
@@ -73,9 +73,9 @@ docker compose up -d
 
 Flyway runs migrations automatically on startup. No manual schema setup required.
 
----
+<br/>
 
-## API Overview
+<img src=".github/section-api.svg" alt="API Overview" width="100%"/>
 
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
@@ -92,8 +92,8 @@ Flyway runs migrations automatically on startup. No manual schema setup required
 
 JWT-protected endpoints require `Authorization: Bearer <token>`. Admin endpoints require `X-Admin-Secret` header.
 
----
+<br/>
 
-## deal-scraper
+<img src=".github/section-companion.svg" alt="deal-scraper" width="100%"/>
 
 Listing ingestion: https://github.com/psilde/deal-scraper
